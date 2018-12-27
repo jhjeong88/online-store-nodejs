@@ -17,6 +17,7 @@ db.once('open', () => {
 mongoose.connect('mongodb://127.0.0.1:27017/fastcampus');
 
 import {router as admin} from './routes/admin';
+import {router as contacts} from './routes/contacts';
 
 const app = express();
 const port = 3000;
@@ -34,6 +35,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/admin', admin);
+app.use('/contacts', contacts);
 
 app.listen(port, () => {
     console.log('Express listening on port', port);
