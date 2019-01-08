@@ -3,6 +3,7 @@ import path from 'path';
 
 import logger from 'morgan';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 
 //MongoDB
 import mongoose from 'mongoose';
@@ -29,6 +30,9 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(cookieParser());
+
+app.use('/uploads', express.static('./uploads'));
 
 app.get('/', (req, res) => {
     res.send('first app');

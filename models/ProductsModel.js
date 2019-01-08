@@ -3,7 +3,11 @@ const Schema = mongoose.Schema;
 import { autoIncrement } from 'mongoose-plugin-autoinc';
 
 const ProductsSchema = new Schema({
-    name: String,
+    name: {
+        type: String,
+        required: [true, '제목을 입력해주세요']
+    },
+    thumbnail: String,
     price: Number,
     description: String,
     created_at: {
