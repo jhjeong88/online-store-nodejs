@@ -5,6 +5,10 @@ import logger from 'morgan';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 
+import flash from 'connect-flash';
+import passport from 'passport';
+import session from 'express-session';
+
 //MongoDB
 import mongoose from 'mongoose';
 mongoose.Promise = global.Promise;
@@ -19,6 +23,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/fastcampus');
 
 import {router as admin} from './routes/admin';
 import {router as contacts} from './routes/contacts';
+import {router as accounts} from './routes/accounts';
 
 const app = express();
 const port = 3000;
@@ -34,12 +39,27 @@ app.use(cookieParser());
 
 app.use('/uploads', express.static('./uploads'));
 
+app.use(session({
+    secret: 'fastcampus',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 2000 * 60 * 60
+    }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(flash());
+
 app.get('/', (req, res) => {
     res.send('first app');
 });
 
 app.use('/admin', admin);
 app.use('/contacts', contacts);
+app.use('/accounts', accounts);
 
 app.listen(port, () => {
     console.log('Express listening on port', port);

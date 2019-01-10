@@ -10,6 +10,12 @@
             </div>
             <%=product.description %>
 
+            <% if(product.thumbnail) {%>
+                <p>
+                    <img src="/uploads/<%=product.thumbnail%>" style='max-width: 100%'/>
+                </p>
+            <% } %>
+
             <!-- 댓글영역  -->
             <hr/>
             <div id="comment_area">

@@ -7,6 +7,23 @@ import {CommentsModel} from '../models/CommentsModel';
 import csrf from 'csurf';
 const csrfProtection = csrf({ cookie: true });
 
+// file location
+import path from 'path';
+const uploadDir = path.join(__dirname, '../uploads');
+const fs = require('fs');
+
+// multer
+import multer from 'multer';
+const storage = multer.diskStorage({
+    destination: function(req, file, callback) {
+        callback(null, uploadDir);
+    },
+    filename: function(req, file, callback) {
+        callback(null, 'products-' + Date.now() + '.' + file.mimetype.split('/')[1]);
+    }
+});
+const upload = multer({ storage: storage });
+
 router.get('/', (req, res) => {
     res.send('admin page');
 });
@@ -15,10 +32,11 @@ router.get('/products/write', csrfProtection, (req, res) => {
     res.render('admin/form', {product: "", csrfToken: req.csrfToken() });
 });
 
-router.post('/products/write', csrfProtection, (req, res) => {
+router.post('/products/write', upload.single('thumbnail'), csrfProtection, (req, res) => {
     const product = new ProductsModel({
         name: req.body.name,
         price: req.body.price,
+        thumbnail: (req.file) ? req.file.filename : "",
         description: req.body.description
     });
 
@@ -45,22 +63,31 @@ router.get('/products/detail/:id', (req, res) => {
     });
 });
 
-router.get('/products/edit/:id', (req, res) => {
+router.get('/products/edit/:id', csrfProtection, (req, res) => {
     ProductsModel.findOne({id:req.params.id}, (err, product) => {
-        res.render('admin/form', {'product': product});
+        res.render('admin/form', {'product': product, csrfToken: req.csrfToken()});
     });
 });
 
-router.post('/products/edit/:id', (req, res) => {
-    const query = {
-        name: req.body.name,
-        price: req.body.price,
-        description: req.body.description
-    }
+router.post('/products/edit/:id', upload.single('thumbnail'), csrfProtection, (req, res) => {
 
-    ProductsModel.update({id:req.params.id}, {$set:query}, (err) => {
-        res.redirect('/admin/products/detail/' + req.params.id);
+    ProductsModel.findOne({id: req.params.id}, (err, product) => {
+        if(req.file && product.thumbnail){
+            fs.unlinkSync(uploadDir + '/' + product.thumbnail);
+        }
+
+        const query = {
+            name: req.body.name,
+            price: req.body.price,
+            thumbnail: (req.file) ? req.file.filename : product.thumbnail,
+            description: req.body.description
+        }
+    
+        ProductsModel.update({id:req.params.id}, {$set:query}, (err) => {
+            res.redirect('/admin/products/detail/' + req.params.id);
+        });
     });
+    
 });
 
 router.get('/products/delete/:id', (req, res) => {
